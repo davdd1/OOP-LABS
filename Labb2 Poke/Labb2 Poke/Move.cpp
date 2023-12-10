@@ -27,40 +27,20 @@ void Move::perform(Pokemon* attacker, Pokemon* defender) const {
 PhysicalMove::PhysicalMove(const string& name, const Type type, const int power)
 	: Move(name, type, power)
 {
-	cout << "Physical move created" << endl;
 }
 
 SpecialMove::SpecialMove(const string& name, const Type type, const int power)
 	: Move(name, type, power)
 {
-	cout << "Special move created" << endl;
 }
 
 void PhysicalMove::execute(Pokemon* attacker, Pokemon* defender) const {
-	defender->reduceHealth(power * (attacker->getAttack() / defender->getDefense())
-		* defender->calculateDamageMultiplier(PhysicalMove::type));
+	float baseDamage = power * (float)(attacker->getAttack() / defender->getDefense());
+	float multiplier = defender->calculateDamageMultiplier(PhysicalMove::type);
+	float damage = baseDamage * multiplier;
+
 	cout << endl << attacker->getName() << " used " << name << "!" << endl;
-	effectiveness(defender->calculateDamageMultiplier(PhysicalMove::type));
-	if (defender->health == 0)
-	{
-		cout << defender->name << " fainted!" << endl << endl;
-	}
-}
 
-
-void SpecialMove::execute(Pokemon* attacker, Pokemon* defender) const {
-	defender->reduceHealth(power * (attacker->getSpAttack() / defender->getSpDefense()) 
-		* defender->calculateDamageMultiplier(SpecialMove::type));
-	cout << endl << attacker->getName() << " used " << name << "!" << endl;
-	effectiveness(defender->calculateDamageMultiplier(SpecialMove::type));
-	if (defender->health == 0)
-	{
-		cout << defender->name << " fainted!" << endl << endl;
-	}
-}
-
-// Skriver ut hur effektivt en attack blir är
-void effectiveness(float multiplier) { 
 	if (multiplier == 0)
 		cout << "It had no effect!" << endl;
 	else if (multiplier < 0.25)
@@ -73,5 +53,95 @@ void effectiveness(float multiplier) {
 		cout << "";
 	else if (multiplier >= 2.0)
 		cout << "It's super effective!" << endl;
+
+	defender->reduceHealth(damage);
+
+	if (defender->health == 0)
+	{
+		cout << defender->name << " fainted!" << endl << endl;
+	}
 }
+
+void SpecialMove::execute(Pokemon* attacker, Pokemon* defender) const {
+	float baseDamage = power * (float)(attacker->getSpAttack() / defender->getSpDefense());
+	float multiplier = defender->calculateDamageMultiplier(SpecialMove::type);
+	float damage = baseDamage * multiplier;
+
+	cout << endl << attacker->getName() << " used " << name << "!" << endl;
+
+	if (multiplier == 0)
+		cout << "It had no effect!" << endl;
+	else if (multiplier < 0.25)
+		cout << "It's not very effective..." << endl;
+	else if (multiplier < 0.5)
+		cout << "It's not very effective..." << endl;
+	else if (multiplier < 1.0)
+		cout << "It's not very effective..." << endl;
+	else if (multiplier < 1.5)
+		cout << "";
+	else if (multiplier >= 2.0)
+		cout << "It's super effective!" << endl;
+
+	defender->reduceHealth(damage);
+
+	if (defender->health == 0)
+	{
+		cout << defender->name << " fainted!" << endl << endl;
+	}
+}
+
+void Pokemon::addHealth(int healing) {
+		health += healing;
+}
+
+HealingMove::HealingMove(const string& name, const Type type, const int power)
+	: Move(name, type, power)
+{
+}
+
+void HealingMove::execute(Pokemon* attacker, Pokemon* defender) const {
+	float baseHealing = power * (float)(attacker->getSpAttack() / defender->getSpDefense());
+	int healing = baseHealing;
+
+	cout << endl << attacker->getName() << " used " << name << "!" << endl;
+
+	attacker->addHealth(healing);
+}
+
+selfDestructMove::selfDestructMove(const string& name, const Type type, const int power)
+	: Move(name, type, power)
+{
+}
+
+void selfDestructMove::execute(Pokemon* attacker, Pokemon* defender) const {
+	float baseDamage = power * (float)(attacker->getAttack() / defender->getDefense());
+	float multiplier = defender->calculateDamageMultiplier(selfDestructMove::type);
+	float damage = baseDamage * multiplier;
+
+	cout << endl << attacker->getName() << " used " << name << "!" << endl;
+
+	if (multiplier == 0)
+		cout << "It had no effect!" << endl;
+	else if (multiplier < 0.25)
+		cout << "It's not very effective..." << endl;
+	else if (multiplier < 0.5)
+		cout << "It's not very effective..." << endl;
+	else if (multiplier < 1.0)
+		cout << "It's not very effective..." << endl;
+	else if (multiplier < 1.5)
+		cout << "";
+	else if (multiplier >= 2.0)
+		cout << "It's super effective!" << endl;
+
+	defender->reduceHealth(damage);
+
+	if (defender->health == 0)
+	{
+		cout << defender->name << " fainted!" << endl << endl;
+	}
+
+	attacker->reduceHealth(1000);
+}
+
+
 
