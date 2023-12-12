@@ -4,11 +4,12 @@
 
 using namespace std;
 
-Pokemon::Pokemon(string& name, Type type, Move* move1,
-	Move* move2, Move* move3, Move* move4, int health,
-	int attack, int spAttack, int defense, int spDefense, int speed, strategyFunc strategy)
+//konstruktor för pokemon
+Pokemon::Pokemon(const string& name, const Type type, const Move* move1,
+	const Move* move2, const Move* move3, const Move* move4, int health,
+	int attack, int spAttack, int defense, int spDefense, int speed, strategyFunc strategy, bool paralyzed)
 	: name(name), type(type), move1(move1), move2(move2), move3(move3), move4(move4),
-	health(health), attack(attack), spAttack(spAttack), defense(defense), spDefense(spDefense), speed(speed), strategy(strategy)
+	health(health), attack(attack), spAttack(spAttack), defense(defense), spDefense(spDefense), speed(speed), strategy(strategy), paralyzed(paralyzed)
 {
 	if (name.empty()) {
 		throw exception("Name cannot be empty");
@@ -36,72 +37,15 @@ Pokemon::Pokemon(string& name, Type type, Move* move1,
 	}
 }
 
-DualTypePokemon::DualTypePokemon(string& name, Type type1, Type type2, Move* move1,
-	Move* move2, Move* move3, Move* move4, int health,
-	int attack, int spAttack, int defense, int spDefense, int speed, strategyFunc strategy)
-	: Pokemon(name, type1, move1, move2, move3, move4, health, attack, spAttack, defense, spDefense, speed, strategy), type2(type2)
+//constructor för dualtypepokemon
+DualTypePokemon::DualTypePokemon(const string& name, const Type type1, const Type type2, const Move* move1,
+	const Move* move2, const Move* move3, const Move* move4, int health,
+	int attack, int spAttack, int defense, int spDefense, int speed, strategyFunc strategy, bool paralyzed)
+	: Pokemon(name, type1, move1, move2, move3, move4, health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed), type2(type2)
 {
 	if (type1 == type2) {
 		throw exception("Types cannot be the same");
 	}
-}
-
-// köra moves
-void Pokemon::executeMove1(Pokemon* target) {
-	if (target->health <= 0) {
-		cout << name << " tried to use " << move1->getName() << " but it failed." << endl;
-		cout << target->name << " has already fainted." << endl << endl;
-		return;
-	}
-	else if (health <= 0) {
-		cout << name << " tried to use " << move1->getName() << " but it failed." << endl;
-		cout << name << " has fainted." << endl << endl;
-		return;
-	}
-	move1->perform(this, target);
-}
-
-void Pokemon::executeMove2(Pokemon* target) {
-	if (target->health <= 0) {
-		cout << name << " tried to use " << move2->getName() << " but it failed." << endl;
-		cout << target->name << " has already fainted." << endl << endl;
-		return;
-	}
-	else if (health <= 0) {
-		cout << name << " tried to use " << move2->getName() << " but it failed." << endl;
-		cout << name << " has fainted." << endl << endl;
-		return;
-	}
-
-	move2->perform(this, target);
-}
-
-void Pokemon::executeMove3(Pokemon* target) {
-	if (target->health <= 0) {
-		cout << name << " tried to use " << move3->getName() << " but it failed." << endl;
-		cout << target->name << " has already fainted." << endl << endl;
-		return;
-	}
-	else if (health <= 0) {
-		cout << name << " tried to use " << move3->getName() << " but it failed." << endl;
-		cout << name << " has fainted." << endl << endl;
-		return;
-	}
-	move3->perform(this, target);
-}
-
-void Pokemon::executeMove4(Pokemon* target) {
-	if (target->health <= 0) {
-		cout << name << " tried to use " << move4->getName() << " but it failed." << endl;
-		cout << target->name << " has already fainted." << endl << endl;
-		return;
-	}
-	else if (health <= 0) {
-		cout << name << " tried to use " << move4->getName() << " but it failed." << endl;
-		cout << name << " has fainted." << endl << endl;
-		return;
-	}
-	move4->perform(this, target);
 }
 
 // reducera health med damage
@@ -111,22 +55,32 @@ void Pokemon::reduceHealth(int damage) {
 		health = 0;
 }
 
+//sätter paralyzedstatus
+void Pokemon::setParalyzed(bool status) {
+	if (status == true) {
+		paralyzed = true;
+		speed = speed / 2;
+	}
+	else {
+		paralyzed = false;
+		speed = speed * 2;
+	}
+}
+
 // returnera multiplicering för skada
-//ska funka för dualtypepokemon
 float Pokemon::calculateDamageMultiplier(Type damagetype) {
 	return TypeChart::getDamageMultiplier(damagetype, type);
 }
 
-
-
+// returnera multiplicering för skada för dualtypepokemon
 float DualTypePokemon::calculateDamageMultiplier(Type damagetype) {
-	float multiplier = TypeChart::getDamageMultiplier(damagetype, type);
-	float multiplier2 = TypeChart::getDamageMultiplier(damagetype, type2);
+	float multiplier = TypeChart::getDamageMultiplier(damagetype, getType());
+	float multiplier2 = TypeChart::getDamageMultiplier(damagetype, getType2());
 	return multiplier * multiplier2;
 }
 
 //returnera ett move
-Move* Pokemon::getMove(int moveNumber) {
+const Move* Pokemon::getMove(int moveNumber) const {
 	switch (moveNumber)
 	{
 	case 1:
@@ -147,9 +101,7 @@ Move* Pokemon::getMove(int moveNumber) {
 	}
 }
 
-// lambdafunktion för att hitta bästa move
-
-
+// funktioner för att lägga till stats med hjälp av buildern
 PokemonBuilder& PokemonBuilder::addType(Type type) {
 	if (typeList.size() == 2)
 		throw exception("Pokemon can only have two types");
@@ -157,7 +109,7 @@ PokemonBuilder& PokemonBuilder::addType(Type type) {
 	return *this;
 }
 
-PokemonBuilder& PokemonBuilder::addMove(Move* move) {
+PokemonBuilder& PokemonBuilder::addMove(const Move* move) {
 	if (moveList.size() == 4)
 		throw exception("Pokemon can only have four moves");
 	moveList.push_back(move);
@@ -217,12 +169,15 @@ PokemonBuilder& PokemonBuilder::setStrategy(strategyFunc strategy) {
 	return *this;
 }
 
+//bygg pokemon med dessa stats
 Pokemon* PokemonBuilder::build() {
+	if (moveList.size() != 4)
+		throw exception("Pokemon must have four moves");
 	if (typeList.size() == 1) {
-		return new Pokemon(name, typeList[0], moveList[0], moveList[1], moveList[2], moveList[3], health, attack, spAttack, defense, spDefense, speed, strategy);
+		return new Pokemon(name, typeList[0], moveList[0], moveList[1], moveList[2], moveList[3], health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed);
 	}
 	else if (typeList.size() == 2) {
-		return new DualTypePokemon(name, typeList[0], typeList[1], moveList[0], moveList[1], moveList[2], moveList[3], health, attack, spAttack, defense, spDefense, speed, strategy);
+		return new DualTypePokemon(name, typeList[0], typeList[1], moveList[0], moveList[1], moveList[2], moveList[3], health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed);
 	}
 	else {
 		throw exception("Pokemon must have at least one type");
@@ -251,7 +206,7 @@ Pokemon* getFastest(Pokemon* pokemon1, Pokemon* pokemon2) {
 	else if (pokemon1->getSpeed() < pokemon2->getSpeed()) {
 		return pokemon2;
 	}
-	else {
+	else {								//om samma speed, random
 		int random = rand() % 2;
 		if (random == 0) {
 			return pokemon1;
@@ -262,44 +217,108 @@ Pokemon* getFastest(Pokemon* pokemon1, Pokemon* pokemon2) {
 	}
 }
 
+//starta battle
 void Battle::start() {
-	while (TeamAlpha.size() > 0 && TeamBravo.size() > 0) {
+	if (TeamAlpha.empty() || TeamBravo.empty())
+		throw exception("Teams cant be empty.");
+	cout << "Battle starting!" << endl << endl;
+	cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
+	cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
+	while (!TeamAlpha.empty() && !TeamBravo.empty()) {
 		Pokemon* pokemonA = TeamAlpha.front();
 		Pokemon* pokemonB = TeamBravo.front();
+
+		cout << "----------------------------------------" << endl;
+		cout << pokemonA->getName() << " health: " << pokemonA->getHealth() << endl;
+		cout << pokemonB->getName() << " health: " << pokemonB->getHealth() << endl;
 
 		Pokemon* fastest = getFastest(pokemonA, pokemonB);
 		Pokemon* slowest = (fastest == pokemonA) ? pokemonB : pokemonA;
 
-		Move* move = fastest->strategy(fastest, slowest);
-
-		move->perform(fastest, slowest);
-		if (slowest->health <= 0) {
+		//snabbare pokemonen attackerar
+		const Move* firstMove = fastest->strategy(fastest, slowest);
+		firstMove->perform(fastest, slowest);
+		//kolla om försvarande pokemon blev fainted av attackerande pokemon
+		if (slowest->getHealth() <= 0) {
 			if (slowest == pokemonA) {
 				TeamAlpha.erase(TeamAlpha.begin());
+				if (!TeamAlpha.empty())
+					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
 			}
 			else if (slowest == pokemonB) {
-				TeamBravo.erase(TeamBravo.begin());	
+				TeamBravo.erase(TeamBravo.begin());
+				if (!TeamBravo.empty())
+					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
 			}
 		}
-		move->perform(slowest, fastest);
-		if (fastest->health <= 0) {
+		//kolla om attackerande pokemon blev fainted av egen skada
+		if (fastest->getHealth() <= 0) {
 			if (fastest == pokemonA) {
 				TeamAlpha.erase(TeamAlpha.begin());
+				if (!TeamAlpha.empty())
+					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
+				continue;
 			}
 			else if (fastest == pokemonB) {
 				TeamBravo.erase(TeamBravo.begin());
+				if (!TeamBravo.empty())
+					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
+				continue;
 			}
 		}
+		//hoppar över så att inte en fainted pokemon attackerar
+		else if (slowest->getHealth() <= 0)
+			continue;
 
+		//sluta ifall något lag inte har några pokemon kvar
+		if (TeamAlpha.empty() || TeamBravo.empty())
+			break;
+
+		//långsammare pokemonen attackerar
+		const Move* secondMove = slowest->strategy(slowest, fastest);
+		secondMove->perform(slowest, fastest);
+
+		//kolla om försvarande pokemon blev fainted av attackerande pokemon
+		if (fastest->getHealth() <= 0) {
+			if (fastest == pokemonA) {
+				TeamAlpha.erase(TeamAlpha.begin());
+				if (!TeamAlpha.empty())
+					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
+			}
+			else if (fastest == pokemonB) {
+				TeamBravo.erase(TeamBravo.begin());
+				if (!TeamBravo.empty())
+					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
+			}
+		}
+		//kolla om attackerande pokemon blev fainted av egen skada
+		if (slowest->getHealth() <= 0) {
+			if (slowest == pokemonA) {
+				TeamAlpha.erase(TeamAlpha.begin());
+				if (!TeamAlpha.empty())
+					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
+			}
+			else if (slowest == pokemonB) {
+				TeamBravo.erase(TeamBravo.begin());
+				if (!TeamBravo.empty())
+					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
+			}
+		}
 	}
-	if (TeamBravo.size() == 0)
-		cout << "Team A wins!" << endl;
-	else
-		cout << "Team B wins!" << endl;
-}
-
-void addHealth(Pokemon* pokemon, int health) {
-	pokemon->health += health;
-	if (pokemon->health > 100)
-		pokemon->health = 100;
+	cout << "----------------------------------------" << endl;
+	if (TeamBravo.empty()) {
+		cout << "Team Bravo ran out of usable Pokemon!" << endl << endl << "Team Alpha wins!" << endl;
+		cout << "Team Alpha: ";
+		for (auto pokemon : TeamAlpha)
+			cout << pokemon->getName() << ": " << pokemon->getHealth() << " HP, ";
+		cout << endl;
+	}
+	else {
+		cout << "Team Alpha ran out of usable Pokemon!" << endl << endl << "Team Bravo wins!" << endl;
+		cout << "Team Bravo: ";
+		for (auto pokemon : TeamBravo)
+			cout << pokemon->getName() << ": " << pokemon->getHealth() << " HP, ";
+		
+	}
+	cout << endl << "----------------------------------------" << endl;
 }

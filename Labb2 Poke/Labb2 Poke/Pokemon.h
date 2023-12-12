@@ -8,79 +8,73 @@
 #include "Move.h"
 
 using namespace std;
-using strategyFunc = function<Move*(Pokemon*, Pokemon*)>;
+using strategyFunc = function<const Move*(const Pokemon*, const Pokemon*)>;
 
 class Pokemon
 {
-private:
-
-	Move* move1;
-	Move* move2;
-	Move* move3;
-	Move* move4;
-
-protected:
-	Type type;
-
-public:
-	string name;
+//private så att endast denna klass kan komma åt dessa variabler,
+//getters och setters används för att komma åt dessa variabler
+private:		
+	const Move* move1;
+	const Move* move2;
+	const Move* move3;
+	const Move* move4;
+	const string name;
+	const Type type;
 	int health;
 	int attack;
 	int spAttack;
 	int defense;
 	int spDefense;
 	int speed;
-	strategyFunc strategy;
-
-	Pokemon(string& name, Type type, Move* move1, Move* move2,
-		Move* move3, Move* move4, int health, int attack, int spAttack,
-		int defense, int spDefense, int speed, strategyFunc strategy);
+	bool paralyzed = false;
+	
+public:
+	Pokemon(const string& name, const Type type, const Move* move1, const Move* move2,
+		const Move* move3, const Move* move4, int health, int attack, int spAttack,
+		int defense, int spDefense, int speed, strategyFunc strategy, bool paralyzed);
 
 	virtual ~Pokemon() {
-		cout << endl << "Pokemon " << name << " has been deleted" << endl;
+		cout << endl << "Pokemon " << name << " has been deleted";
 	}
 
-	void executeMove1(Pokemon* target);
-
-	void executeMove2(Pokemon* target);
-
-	void executeMove3(Pokemon* target);
-
-	void executeMove4(Pokemon* target);
-
-	void reduceHealth(int damage);
-
-	void addHealth(int health);
-
+	strategyFunc strategy;
 	virtual float calculateDamageMultiplier(Type damagetype);
 
-	int getAttack() { return attack; }  //returnerar attack
-	int getDefense() { return defense; } //returnerar defense
-	Type getType() { return type; } //returnerar type
-	int getSpAttack() { return spAttack; } //returnerar spAttack
-	int getSpDefense() { return spDefense; } //returnerar spDefense
-	int getHealth() { return health; } //returnerar health
-	int getSpeed() { return speed; } //returnerar speed
-	string getName() { return name; } //returnerar name
-	Move* getMove(int moveNumber); //returnerar move)
-	strategyFunc getStrategy() { return strategy; } //returnerar strategy
+	const int getAttack() { return attack; }  //returnerar attack
+	const int getDefense() { return defense; } //returnerar defense
+	const Type getType() { return type; } //returnerar type
+	const Type getType2() { return type; } //returnerar type2
+	const int getSpAttack() { return spAttack; } //returnerar spAttack
+	const int getSpDefense() { return spDefense; } //returnerar spDefense
+	const int getHealth() { return health; } //returnerar health
+	const int getSpeed() { return speed; } //returnerar speed
+	const string getName() { return name; } //returnerar name
+	const Move* getMove(int moveNumber) const; //returnerar move)
+	const strategyFunc getStrategy() { return strategy; } //returnerar strategy
+	const bool isParalyzed() { return paralyzed; } //returnerar paralyzed
+
+	void setParalyzed(bool status); //sätter paralyzedstatus
+	void setHealth(int newHealth) { health = newHealth; } //sätter health
+	void addHealth(int health); //adderar health
+	void reduceHealth(int damage); //reducerar health med damage
 };
 
 class DualTypePokemon : public Pokemon
 {
-private:
-	Type type2;
+private:			//private för att endast denna klass behöver komma åt type2
+	const Type type2;
 public:
-	DualTypePokemon(string& name, Type type1, Type type2, Move* move1, Move* move2,
-		Move* move3, Move* move4, int health, int attack, int spAttack,
-		int defense, int spDefense, int speed, strategyFunc strategy);
+	DualTypePokemon(const string& name, const Type type1, const Type type2, const Move* move1, const Move* move2,
+		const Move* move3, const Move* move4, int health, int attack, int spAttack,
+		int defense, int spDefense, int speed, strategyFunc strategy, bool paralyzed);
 	float calculateDamageMultiplier(Type damagetype) override;
 };
 
 class PokemonBuilder {
 private:
 	vector<Type> typeList;
-	vector<Move*> moveList;
+	vector<const Move*> moveList;
 	string name;
 	int health;
 	int attack;
@@ -89,11 +83,12 @@ private:
 	int spDefense;
 	int speed;
 	strategyFunc strategy;
-	
+	bool paralyzed = false;
+
 public:
 	PokemonBuilder() {};
 	PokemonBuilder& addType(Type type);
-	PokemonBuilder& addMove(Move* move);
+	PokemonBuilder& addMove(const Move* move);
 	PokemonBuilder& setName(string name);
 	PokemonBuilder& setHealth(int health);
 	PokemonBuilder& setAttack(int attack);
@@ -113,7 +108,16 @@ private:
 	vector<Pokemon*> TeamBravo;
 public:
 	Battle() {};
-	~Battle() {};	//deletar alla pokemon från vectorerna
+
+	//deletar alla pokemon från vectorerna
+	~Battle() {
+		for (int i = 0; i < TeamAlpha.size(); i++) {
+			delete TeamAlpha[i];
+		}
+		for (int i = 0; i < TeamBravo.size(); i++) {
+			delete TeamBravo[i];
+		}
+	};	
 	Battle& addPokemonToA(Pokemon* pokemon); //lägger till pokemon i vectorn Alpha
 	Battle& addPokemonToB(Pokemon* pokemon); //lägger till pokemon i vectorn Bravo
 	void start(); //startar battle

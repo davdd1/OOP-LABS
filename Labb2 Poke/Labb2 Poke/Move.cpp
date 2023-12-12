@@ -18,6 +18,12 @@ Move::Move(const string& name, const Type type, const int power)
 }
 
 void Move::perform(Pokemon* attacker, Pokemon* defender) const {
+	if (attacker->isParalyzed() == true && rand() % 4 == 1)
+	{
+		cout << attacker->getName() << " is paralyzed and couldn't move!" << endl;
+		return;
+	}
+
 	if (defender->getHealth() > 0)
 		execute(attacker, defender);
 	else
@@ -35,9 +41,10 @@ SpecialMove::SpecialMove(const string& name, const Type type, const int power)
 }
 
 void PhysicalMove::execute(Pokemon* attacker, Pokemon* defender) const {
-	float baseDamage = power * (float)(attacker->getAttack() / defender->getDefense());
+	float baseDamage = 0.5 * (power * (static_cast<float>(attacker->getAttack()) / defender->getDefense()));
 	float multiplier = defender->calculateDamageMultiplier(PhysicalMove::type);
-	float damage = baseDamage * multiplier;
+	int damage = baseDamage * multiplier;
+	defender->reduceHealth(damage);
 
 	cout << endl << attacker->getName() << " used " << name << "!" << endl;
 
@@ -54,18 +61,15 @@ void PhysicalMove::execute(Pokemon* attacker, Pokemon* defender) const {
 	else if (multiplier >= 2.0)
 		cout << "It's super effective!" << endl;
 
-	defender->reduceHealth(damage);
-
-	if (defender->health == 0)
-	{
-		cout << defender->name << " fainted!" << endl << endl;
-	}
+	if (defender->getHealth() == 0)
+		cout << defender->getName() << " fainted!" << endl << endl;
 }
 
 void SpecialMove::execute(Pokemon* attacker, Pokemon* defender) const {
-	float baseDamage = power * (float)(attacker->getSpAttack() / defender->getSpDefense());
+	float baseDamage = 0.5 * (power * (static_cast<float>(attacker->getSpAttack()) / defender->getSpDefense()));
 	float multiplier = defender->calculateDamageMultiplier(SpecialMove::type);
-	float damage = baseDamage * multiplier;
+	int damage = baseDamage * multiplier;
+	defender->reduceHealth(damage);
 
 	cout << endl << attacker->getName() << " used " << name << "!" << endl;
 
@@ -82,11 +86,9 @@ void SpecialMove::execute(Pokemon* attacker, Pokemon* defender) const {
 	else if (multiplier >= 2.0)
 		cout << "It's super effective!" << endl;
 
-	defender->reduceHealth(damage);
-
-	if (defender->health == 0)
+	if (defender->getHealth() == 0)
 	{
-		cout << defender->name << " fainted!" << endl << endl;
+		cout << defender->getName() << " fainted!" << endl << endl;
 	}
 }
 
@@ -100,12 +102,10 @@ HealingMove::HealingMove(const string& name, const Type type, const int power)
 }
 
 void HealingMove::execute(Pokemon* attacker, Pokemon* defender) const {
-	float baseHealing = power * (float)(attacker->getSpAttack() / defender->getSpDefense());
-	int healing = baseHealing;
-
-	cout << endl << attacker->getName() << " used " << name << "!" << endl;
+	int healing = power * 0.75;
 
 	attacker->addHealth(healing);
+	cout << endl << attacker->getName() << " used " << name << "!" << endl;
 }
 
 selfDestructMove::selfDestructMove(const string& name, const Type type, const int power)
@@ -114,10 +114,11 @@ selfDestructMove::selfDestructMove(const string& name, const Type type, const in
 }
 
 void selfDestructMove::execute(Pokemon* attacker, Pokemon* defender) const {
-	float baseDamage = power * (float)(attacker->getAttack() / defender->getDefense());
+	float baseDamage = 0.66 * (power * static_cast<float>(attacker->getAttack() / (defender->getDefense() / 1.5)));
 	float multiplier = defender->calculateDamageMultiplier(selfDestructMove::type);
-	float damage = baseDamage * multiplier;
+	int damage = baseDamage * multiplier;
 
+	defender->reduceHealth(damage);
 	cout << endl << attacker->getName() << " used " << name << "!" << endl;
 
 	if (multiplier == 0)
@@ -133,15 +134,31 @@ void selfDestructMove::execute(Pokemon* attacker, Pokemon* defender) const {
 	else if (multiplier >= 2.0)
 		cout << "It's super effective!" << endl;
 
-	defender->reduceHealth(damage);
 
-	if (defender->health == 0)
-	{
-		cout << defender->name << " fainted!" << endl << endl;
-	}
+	if (defender->getHealth() == 0)
+		cout << defender->getName() << " fainted!" << endl;
 
-	attacker->reduceHealth(1000);
+	attacker->setHealth(0);
+	cout << attacker->getName() << " fainted from his own blast!" << endl << endl;
 }
 
+ParalyzingMove::ParalyzingMove(const string& name, const Type type, const int power)
+	: Move(name, type, power)
+{
+}
+
+//har const för att den ej ska ändra på Move-objektet
+void ParalyzingMove::execute(Pokemon* attacker, Pokemon* defender) const {
+	cout << endl << attacker->getName() << " used " << name << "!" << endl;
+
+	if (defender->getHealth() == 0)
+		cout << defender->getName() << " fainted!" << endl << endl;
+
+	if (rand() % 10 < 9)			//90% chans att paralysera
+	{
+		defender->setParalyzed(true);
+		cout << defender->getName() << " got paralyzed!" << endl;
+	}
+}
 
 

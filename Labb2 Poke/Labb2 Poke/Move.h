@@ -10,7 +10,7 @@ class Pokemon;
 
 class Move
 {
-protected:
+protected:      //protected så att subklasser kan komma åt dessa variabler
     string name;
     Type type;
     int power;
@@ -46,9 +46,16 @@ public:
 	void execute(Pokemon* attacker, Pokemon* defender) const override;
 };
 
-class selfDestruct : public Move
+class selfDestructMove : public Move
 {
 public:
-	selfDestruct(const string& name, const Type type, const int power);
+    selfDestructMove(const string& name, const Type type, const int power);
+	void execute(Pokemon* attacker, Pokemon* defender) const override;
+};
+
+class ParalyzingMove : public Move
+{
+public:
+	ParalyzingMove(const string& name, const Type type, const int power);
 	void execute(Pokemon* attacker, Pokemon* defender) const override;
 };
