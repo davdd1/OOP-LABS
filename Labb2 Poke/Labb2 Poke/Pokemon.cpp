@@ -7,7 +7,8 @@ using namespace std;
 //konstruktor för pokemon
 Pokemon::Pokemon(const string& name, const Type type, const Move* move1,
 	const Move* move2, const Move* move3, const Move* move4, int health,
-	int attack, int spAttack, int defense, int spDefense, int speed, strategyFunc strategy, bool paralyzed)
+	const int attack, const int spAttack, const int defense, const int spDefense, 
+	int speed, const strategyFunc strategy, bool paralyzed)
 	: name(name), type(type), move1(move1), move2(move2), move3(move3), move4(move4),
 	health(health), attack(attack), spAttack(spAttack), defense(defense), spDefense(spDefense), speed(speed), strategy(strategy), paralyzed(paralyzed)
 {
@@ -39,8 +40,8 @@ Pokemon::Pokemon(const string& name, const Type type, const Move* move1,
 
 //constructor för dualtypepokemon
 DualTypePokemon::DualTypePokemon(const string& name, const Type type1, const Type type2, const Move* move1,
-	const Move* move2, const Move* move3, const Move* move4, int health,
-	int attack, int spAttack, int defense, int spDefense, int speed, strategyFunc strategy, bool paralyzed)
+	const Move* move2, const Move* move3, const Move* move4, int health, const int attack, const int spAttack, 
+	const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed)
 	: Pokemon(name, type1, move1, move2, move3, move4, health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed), type2(type2)
 {
 	if (type1 == type2) {
@@ -224,9 +225,12 @@ void Battle::start() {
 	cout << "Battle starting!" << endl << endl;
 	cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
 	cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
-	while (!TeamAlpha.empty() && !TeamBravo.empty()) {
-		Pokemon* pokemonA = TeamAlpha.front();
-		Pokemon* pokemonB = TeamBravo.front();
+	int indexA = 0;
+	int indexB = 0;
+	while (indexA < TeamAlpha.size() && indexB < TeamBravo.size()) {
+
+		Pokemon* pokemonA = TeamAlpha[indexA];
+		Pokemon* pokemonB = TeamBravo[indexB];
 
 		cout << "----------------------------------------" << endl;
 		cout << pokemonA->getName() << " health: " << pokemonA->getHealth() << endl;
@@ -241,27 +245,27 @@ void Battle::start() {
 		//kolla om försvarande pokemon blev fainted av attackerande pokemon
 		if (slowest->getHealth() <= 0) {
 			if (slowest == pokemonA) {
-				TeamAlpha.erase(TeamAlpha.begin());
-				if (!TeamAlpha.empty())
-					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
+				indexA++;
+				if (indexA < TeamAlpha.size())
+					cout << "Team Alpha sent out " << TeamAlpha[indexA]->getName() << "!" << endl;
 			}
 			else if (slowest == pokemonB) {
-				TeamBravo.erase(TeamBravo.begin());
-				if (!TeamBravo.empty())
-					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
+				indexB++;
+				if (indexB < TeamBravo.size())
+					cout << "Team Bravo sent out " << TeamBravo[indexB]->getName() << "!" << endl;
 			}
 		}
 		//kolla om attackerande pokemon blev fainted av egen skada
 		if (fastest->getHealth() <= 0) {
 			if (fastest == pokemonA) {
-				TeamAlpha.erase(TeamAlpha.begin());
-				if (!TeamAlpha.empty())
+				indexA++;
+				if (indexA < TeamAlpha.size())
 					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
 				continue;
 			}
 			else if (fastest == pokemonB) {
-				TeamBravo.erase(TeamBravo.begin());
-				if (!TeamBravo.empty())
+				indexB++;
+				if (indexB < TeamBravo.size())
 					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
 				continue;
 			}
@@ -271,7 +275,7 @@ void Battle::start() {
 			continue;
 
 		//sluta ifall något lag inte har några pokemon kvar
-		if (TeamAlpha.empty() || TeamBravo.empty())
+		if (indexA >= TeamAlpha.size() || indexB >= TeamBravo.size())
 			break;
 
 		//långsammare pokemonen attackerar
@@ -281,32 +285,32 @@ void Battle::start() {
 		//kolla om försvarande pokemon blev fainted av attackerande pokemon
 		if (fastest->getHealth() <= 0) {
 			if (fastest == pokemonA) {
-				TeamAlpha.erase(TeamAlpha.begin());
-				if (!TeamAlpha.empty())
+				indexA++;
+				if (indexA < TeamAlpha.size())
 					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
 			}
 			else if (fastest == pokemonB) {
-				TeamBravo.erase(TeamBravo.begin());
-				if (!TeamBravo.empty())
+				indexB++;
+				if (indexB < TeamBravo.size())
 					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
 			}
 		}
 		//kolla om attackerande pokemon blev fainted av egen skada
 		if (slowest->getHealth() <= 0) {
 			if (slowest == pokemonA) {
-				TeamAlpha.erase(TeamAlpha.begin());
-				if (!TeamAlpha.empty())
+				indexA++;
+				if (indexA < TeamAlpha.size())
 					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
 			}
 			else if (slowest == pokemonB) {
-				TeamBravo.erase(TeamBravo.begin());
-				if (!TeamBravo.empty())
+				indexB++;
+				if (indexB < TeamBravo.size())
 					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
 			}
 		}
 	}
 	cout << "----------------------------------------" << endl;
-	if (TeamBravo.empty()) {
+	if (indexB >= TeamBravo.size()) {
 		cout << "Team Bravo ran out of usable Pokemon!" << endl << endl << "Team Alpha wins!" << endl;
 		cout << "Team Alpha: ";
 		for (auto pokemon : TeamAlpha)

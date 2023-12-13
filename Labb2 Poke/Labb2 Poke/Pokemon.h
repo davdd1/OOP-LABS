@@ -8,13 +8,13 @@
 #include "Move.h"
 
 using namespace std;
-using strategyFunc = function<const Move*(const Pokemon*, const Pokemon*)>;
+using strategyFunc = function<const Move* (const Pokemon*, const Pokemon*)>;
 
 class Pokemon
 {
-//private så att endast denna klass kan komma åt dessa variabler,
-//getters och setters används för att komma åt dessa variabler
-private:		
+	//private så att endast denna klass kan komma åt dessa variabler direkt
+	//getters och setters används för att komma åt dessa variabler utanför klassen
+private:
 	const Move* move1;
 	const Move* move2;
 	const Move* move3;
@@ -22,23 +22,23 @@ private:
 	const string name;
 	const Type type;
 	int health;
-	int attack;
-	int spAttack;
-	int defense;
-	int spDefense;
+	const int attack;
+	const int spAttack;
+	const int defense;
+	const int spDefense;
 	int speed;
 	bool paralyzed = false;
-	
+
 public:
 	Pokemon(const string& name, const Type type, const Move* move1, const Move* move2,
-		const Move* move3, const Move* move4, int health, int attack, int spAttack,
-		int defense, int spDefense, int speed, strategyFunc strategy, bool paralyzed);
+		const Move* move3, const Move* move4, int health, const int attack, const int spAttack,
+		const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed);
 
 	virtual ~Pokemon() {
 		cout << endl << "Pokemon " << name << " has been deleted";
 	}
 
-	strategyFunc strategy;
+	const strategyFunc strategy;
 	virtual float calculateDamageMultiplier(Type damagetype);
 
 	const int getAttack() { return attack; }  //returnerar attack
@@ -66,8 +66,8 @@ private:			//private för att endast denna klass behöver komma åt type2
 	const Type type2;
 public:
 	DualTypePokemon(const string& name, const Type type1, const Type type2, const Move* move1, const Move* move2,
-		const Move* move3, const Move* move4, int health, int attack, int spAttack,
-		int defense, int spDefense, int speed, strategyFunc strategy, bool paralyzed);
+		const Move* move3, const Move* move4, int health, const int attack, const int spAttack,
+		const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed);
 	float calculateDamageMultiplier(Type damagetype) override;
 };
 
@@ -82,8 +82,8 @@ private:
 	int spAttack;
 	int spDefense;
 	int speed;
-	strategyFunc strategy;
 	bool paralyzed = false;
+	strategyFunc strategy;
 
 public:
 	PokemonBuilder() {};
@@ -117,7 +117,7 @@ public:
 		for (int i = 0; i < TeamBravo.size(); i++) {
 			delete TeamBravo[i];
 		}
-	};	
+	};
 	Battle& addPokemonToA(Pokemon* pokemon); //lägger till pokemon i vectorn Alpha
 	Battle& addPokemonToB(Pokemon* pokemon); //lägger till pokemon i vectorn Bravo
 	void start(); //startar battle

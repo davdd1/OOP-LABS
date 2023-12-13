@@ -160,5 +160,3 @@ void ParalyzingMove::execute(Pokemon* attacker, Pokemon* defender) const {
 		cout << defender->getName() << " got paralyzed!" << endl;
 	}
 }
-
-
