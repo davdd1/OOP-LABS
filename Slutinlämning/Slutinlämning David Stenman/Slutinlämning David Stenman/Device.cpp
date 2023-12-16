@@ -1,291 +1,108 @@
 #include <algorithm>
-#include "Device.h"
 #include <string>
 #include <iostream>
 #include <vector>
+#include "Device.h"
 
 Device::Device(string& name)
-	: name(name), connectedDevice(nullptr)
+	: name(name), leftDevice(nullptr), rightDevice(nullptr), parentDevice(nullptr)
 {
-	cout << "Device[" << this->getName() << "] was created!" << endl;
+}
+
+NetworkDevice::NetworkDevice(string name)
+	: Device(name)
+{
+	cout << "NetworkDevice[" << this->getName() << "] was created!" << endl;
+}
+
+void NetworkDevice::ping()
+{
+	cout << "NetworkDevice[" << this->getName() << "] says Hello!" << endl;
+	if (getLeftDevice() != nullptr)
+		cout << "  and NetworkDevice[" << getLeftDevice()->getName() << "] also says Hello!";
+	if (getRightDevice() != nullptr)
+		cout << "  and NetworkDevice[" << getRightDevice()->getName() << "] also says Hello!";
+}
+
+AudioDevice::AudioDevice(string name)
+	: Device(name)
+{
+	cout << "AudioDevice[" << this->getName() << "] was created!" << endl;
+}
+
+void Device::pingAllChildren() {
+	{
+		// If this device has a left child, ping it and all its children
+		if (getLeftDevice() != nullptr)
+		{
+			cout << "Device[" << getLeftDevice()->getName() << "] says Hello!" << endl;
+			getLeftDevice()->pingAllChildren();
+		}
+
+		// If this device has a right child, ping it and all its children
+		if (getRightDevice() != nullptr)
+		{
+			cout << "Device[" << getRightDevice()->getName() << "] says Hello!" << endl;
+			getRightDevice()->pingAllChildren();
+		}
+	}
+}
+
+void AudioDevice::ping()
+{
+	// If this device is the root (no parent), ping all children
+	if (getParentDevice() == nullptr)
+	{
+		cout << "AudioDevice[" << this->getName() << "] says Hello!" << endl;
+		pingAllChildren();
+	}
+	// If this device is not the root, pass the ping to the parent
+	else
+	{
+		getParentDevice()->ping();
+	}
+}
+
+void Device::disconnectDevice(Device* device)
+{
+	if (leftDevice == device)
+	{
+		leftDevice->dcParentDevice();
+		leftDevice = nullptr;
+	}
+	else if (rightDevice == device)
+	{
+		rightDevice->dcParentDevice();
+		rightDevice = nullptr;
+	}
+	else
+	{
+		cout << "Device is not connected to this device" << endl;
+		return;
+	}
+	cout << "Device[" << device->getName() << "] was disconnected from Device[" << this->getName() << "]" << endl;
 }
 
 void Device::printDevice()
 {
 	cout << "Device[" << this->getName() << "]";
-	if (connectedDevice != nullptr)
-		cout << " is connected to Device[" << connectedDevice->getName() << "]";
-	cout << endl;
-}
 
-void Device::setConnectedDevice(Device* device)
-{
-	connectedDevice = device;
-}
+	if (leftDevice != nullptr || rightDevice != nullptr)
+	{
 
-DeviceController::DeviceController()
-{
-}
-
-//kolla om namnets input är giltigt
-bool DeviceController::isNameValid(string name) {
-	if (name.empty()) {
-		cout << "Name cannot be empty" << endl;
-		return false;
-	}
-	if (name.length() > 20)
-	{
-		cout << "Name cannot be longer than 20 characters" << endl;
-		return false;
-	}
-	if (name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890") != string::npos)
-	{
-		cout << "Name can only contain letters and numbers" << endl;
-		return false;
-	}
-	if (name.find_first_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") == string::npos)
-	{
-		cout << "Name must contain at least one letter" << endl;
-	}
-	if (name.find_first_of("01234567890") == 0)
-	{
-		cout << "Name cannot start with a number" << endl;
-		return false;
-	}
-
-	for (Device* device : Devices)
-	{
-		if (device->getName() == name) {
-			cout << "Device already exists" << endl;
-			return false;
+		if (leftDevice != nullptr) {
+			cout << " is connected to Device[" << leftDevice->getName() << "]";
+			if (rightDevice != nullptr)
+				cout << " and Device[" << rightDevice->getName() << "]";
 		}
-	}
-
-	return true;
-}
-
-//skapa enhet om namnet är giltigt
-void DeviceController::createDevice(string name, int deviceType)
-{
-	if (isNameValid(name) && deviceType == 1)
-		Devices.push_back(new NetworkDevice(name));
-	else if (isNameValid(name) && deviceType == 2)
-		Devices.push_back(new AudioDevice(name));
-}
-
-
-void DeviceController::disconnectDevices(string deviceName1, string deviceName2)
-{
-	Device* device1 = nullptr;
-	Device* device2 = nullptr;
-	for (Device* device : Devices)
-	{
-		if (device->getName() == deviceName1)
-			device1 = device;
-		if (device->getName() == deviceName2)
-			device2 = device;
-	}
-
-	//felhantering
-	if (device1 == nullptr) {
-		cout << "Device 1 does not exist" << endl;
-		return;
-	}
-	if (device2 == nullptr) {
-		cout << "Device 2 does not exist" << endl;
-		return;
-	}
-	if (device1->getConnectedDevice() == nullptr) {
-		cout << "Device 1 is not connected to any device" << endl;
-		return;
-	}
-	if (device2->getConnectedDevice() == nullptr) {
-		cout << "Device 2 is not connected to any device" << endl;
-		return;
-	}
-
-	device1->disconnectDevice();
-	device2->disconnectDevice();
-	cout << "Devices " << device1->getName() << " and " << device2->getName() << " were disconnected!" << endl;
-}
-
-void DeviceController::deleteDevice(string name)
-{
-	for (Device* device : Devices)
-	{
-		if (device->getName() == name)
+		else
 		{
-			if (device->getConnectedDevice() != nullptr)
-				disconnectDevices(name, device->getConnectedDevice()->getName());
-			Devices.erase(std::remove(Devices.begin(), Devices.end(), device), Devices.end());
-			delete device;
-			return;
+			cout << " is connected to Device[" << rightDevice->getName() << "]";
+			if (leftDevice != nullptr)
+				cout << " and Device[" << leftDevice->getName() << "]";
 		}
-	}
-	cout << "Device does not exist" << endl;
-}
-
-void DeviceController::connectDevices(string deviceName1, string deviceName2)
-{
-	//hitta enheterna med namnen
-	Device* device1 = nullptr;
-	Device* device2 = nullptr;
-	for (Device* device : Devices)
-	{
-		if (device->getName() == deviceName1)
-			device1 = device;
-		if (device->getName() == deviceName2)
-			device2 = device;
-	}
-
-	//felhantering
-	if (device1 == nullptr) {
-		cout << "Device 1 does not exist" << endl;
-		return;
-	}
-	if (device2 == nullptr) {
-		cout << "Device 2 does not exist" << endl;
-		return;
-	}
-	if (device1->getLeftDevice() != nullptr && device2->getRightDevice() != nullptr) {
-		cout << device1->getName() << " is already connected to two other devices" << endl;
-		return;
-	}
-	if (device1->getLeftDevice() != nullptr) {
-		if (!isInTree(device1, device2->getName())) {
-			cout << "Devices are already connected" << endl;
-			return;
-		}
-		device1->setLeftDevice(device2);
-		device2->setParentDevice(device1);
-		return;
-	}
-	if (device1->getRightDevice() == nullptr) {
-		device1->setRightDevice(device2);
-		return;
-	}
-
-	cout << "Devices " << device1->getName() << " and " << device2->getName() << " were connected!" << endl;
-}
-
-
-void DeviceController::printDevices()
-{
-	for (Device* device : Devices)
-	{
-		device->printDevice();
 	}
 	cout << endl;
 }
 
-//traverserar genom trädet
-bool DeviceController::isInTree(Device* device, string name)
-{
-	if (device == nullptr)
-		return false;
-	if (device->getName() == name)
-		return true;
-	return isInTree(device->getLeftDevice(), name) || isInTree(device->getRightDevice(), name);
-}
 
-
-void DeviceController::devicePing(string deviceName)
-{
-	Device* device1 = nullptr;
-	for (Device* device : Devices)
-	{
-		if (device1->getName() == deviceName)
-			device1 = device;
-	}
-
-	//felhantering
-	if (device1 == nullptr) {
-		cout << "Device does not exist" << endl;
-		return;
-	}
-
-	
-	cout << "Device[" << device1->getName() << "] says Hello!" << endl;
-	if (device1->getConnectedDevice() != nullptr)
-		cout << "Device[" << device1->getConnectedDevice()->getName() << "] also says Hello!" << endl;
-	
-}
-
-void DeviceController::createMenu() {
-	int input;
-	string name1;
-	string name2;
-	while (true)
-	{
-		cout << "What do you want to do?" << endl << "1. Create device" << endl <<
-			"2. Delete device" << endl << "3. Connect devices" << endl << "4. Disconnect devices" << endl <<
-			"5. Print devices" << endl << "6. Ping device" << endl << "7. Quit" << endl;
-
-		cin >> input;
-		while (!(input > 0 && input < 8))
-		{
-			cin.clear();
-			cin.ignore(100, '\n');
-			cout << "Invalid input" << endl;
-			cin >> input;
-		}
-		if (input == 1)
-		{
-			int type;
-			cout << "1. Create device" << endl;
-			cout << "Enter name: ";
-			cin >> name1;
-			cout << "Enter type:" << endl << "1. NetworkDevice \n2. AudioDevice" << endl;
-			cin >> type;
-			createDevice(name1, type);
-		}
-		else if (input == 2)
-		{
-			cout << "2. Delete device" << endl;
-			cout << "Enter name: ";
-			cin >> name1;
-			deleteDevice(name1);
-		}
-		else if (input == 3)
-		{
-			cout << "3. Connect devices" << endl;
-			cout << "Enter name of first device: ";
-			cin >> name1;
-			cout << "Enter name of second device: ";
-			cin >> name2;
-			connectDevices(name1, name2);
-		}
-		else if (input == 4)
-		{
-			cout << "4. Disconnect devices" << endl;
-			cout << "Enter name of first device: ";
-			cin >> name1;
-			cout << "Enter name of second device: ";
-			cin >> name2;
-			disconnectDevices(name1, name2);
-		}
-		else if (input == 5)
-		{
-			cout << "5. Print devices" << endl;
-			printDevices();
-		}
-		else if (input == 6)
-		{
-			cout << "6. Ping device" << endl;
-			cout << "Enter device name: ";
-			cin >> name1;
-			devicePing(name1);
-		}
-		else if (input == 7)
-		{
-			cout << "7. Quit" << endl;
-			cout << "See you next time!" << endl;
-			break;
-		}
-	}
-}
-
-void InterfaceApp::run()
-{
-	controller.createMenu();
-}
