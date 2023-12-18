@@ -17,11 +17,7 @@ NetworkDevice::NetworkDevice(string name)
 
 void NetworkDevice::ping()
 {
-	cout << "NetworkDevice[" << this->getName() << "] says Hello!" << endl;
-	if (getLeftDevice() != nullptr)
-		cout << "  and NetworkDevice[" << getLeftDevice()->getName() << "] also says Hello!";
-	if (getRightDevice() != nullptr)
-		cout << "  and NetworkDevice[" << getRightDevice()->getName() << "] also says Hello!";
+	cout << "Ping: NetworkDevice[" << this->getName() << "] says Hello!" << endl;
 }
 
 AudioDevice::AudioDevice(string name)
@@ -30,79 +26,58 @@ AudioDevice::AudioDevice(string name)
 	cout << "AudioDevice[" << this->getName() << "] was created!" << endl;
 }
 
-void Device::pingAllChildren() {
-	{
-		// If this device has a left child, ping it and all its children
-		if (getLeftDevice() != nullptr)
-		{
-			cout << "Device[" << getLeftDevice()->getName() << "] says Hello!" << endl;
-			getLeftDevice()->pingAllChildren();
-		}
-
-		// If this device has a right child, ping it and all its children
-		if (getRightDevice() != nullptr)
-		{
-			cout << "Device[" << getRightDevice()->getName() << "] says Hello!" << endl;
-			getRightDevice()->pingAllChildren();
-		}
-	}
-}
-
 void AudioDevice::ping()
 {
-	// If this device is the root (no parent), ping all children
-	if (getParentDevice() == nullptr)
-	{
-		cout << "AudioDevice[" << this->getName() << "] says Hello!" << endl;
-		pingAllChildren();
-	}
-	// If this device is not the root, pass the ping to the parent
-	else
-	{
-		getParentDevice()->ping();
-	}
+	cout << "Ping: AudioDevice[" << this->getName() << "] says Hello!" << endl;
 }
 
+//koppla bort två enheter om de finns och är anslutna
 void Device::disconnectDevice(Device* device)
 {
-	if (leftDevice == device)
+	cout << "Device[" << device->getName() << "] was disconnected from Device[" << this->getName() << "]" << endl;
+	if (leftDevice != nullptr && leftDevice == device)
 	{
 		leftDevice->dcParentDevice();
 		leftDevice = nullptr;
 	}
-	else if (rightDevice == device)
+	else if (rightDevice != nullptr && rightDevice == device)
 	{
 		rightDevice->dcParentDevice();
 		rightDevice = nullptr;
+	}
+	else if (parentDevice != nullptr && parentDevice == device)
+	{
+		if (leftDevice != nullptr)
+		{
+			leftDevice->dcParentDevice();
+			leftDevice = nullptr;
+		}
+		if (rightDevice != nullptr)
+		{
+			rightDevice->dcParentDevice();
+			rightDevice = nullptr;
+		}
+		parentDevice = nullptr;
 	}
 	else
 	{
 		cout << "Device is not connected to this device" << endl;
 		return;
 	}
-	cout << "Device[" << device->getName() << "] was disconnected from Device[" << this->getName() << "]" << endl;
 }
 
-void Device::printDevice()
+//Printar enheten och dess anslutna enheter om den finns
+//med rätt indentering
+void Device::printDevice(int level)
 {
-	cout << "Device[" << this->getName() << "]";
+	for (int i = 0; i < level; ++i)
+		cout << "  ";
 
-	if (leftDevice != nullptr || rightDevice != nullptr)
-	{
+	cout << "Device: [" << this->getName() << "]" << endl;
 
-		if (leftDevice != nullptr) {
-			cout << " is connected to Device[" << leftDevice->getName() << "]";
-			if (rightDevice != nullptr)
-				cout << " and Device[" << rightDevice->getName() << "]";
-		}
-		else
-		{
-			cout << " is connected to Device[" << rightDevice->getName() << "]";
-			if (leftDevice != nullptr)
-				cout << " and Device[" << leftDevice->getName() << "]";
-		}
-	}
-	cout << endl;
+	if (leftDevice != nullptr)
+		leftDevice->printDevice(level + 1);
+
+	if (rightDevice != nullptr)
+		rightDevice->printDevice(level + 1);
 }
-
-

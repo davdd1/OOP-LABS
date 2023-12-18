@@ -1,7 +1,3 @@
-#include <algorithm>
-#include <string>
-#include <iostream>
-#include <vector>
 #include "DeviceController.h"
 #include "Device.h"
 
@@ -55,6 +51,7 @@ void DeviceController::createDevice(string name, int deviceType)
 		Devices.push_back(new AudioDevice(name));
 }
 
+//koppla bort två enheter om de finns och är anslutna
 void DeviceController::disconnectDevices(string deviceName1, string deviceName2)
 {
 	Device* device1 = nullptr;
@@ -80,36 +77,50 @@ void DeviceController::disconnectDevices(string deviceName1, string deviceName2)
 		cout << "Device 1 is not connected to any device" << endl;
 		return;
 	}
-	if (device2->getLeftDevice() == nullptr && device2->getRightDevice() == nullptr) {
-		cout << "Device 2 is not connected to any device" << endl;
+	if (device2->getParentDevice() == nullptr) {
+		cout << "Device 2 is not connected to any parent device" << endl;
 		return;
 	}
 
 	device1->disconnectDevice(device2);
-	device2->disconnectDevice(device1);
 	cout << "Devices " << device1->getName() << " and " << device2->getName() << " were disconnected!" << endl;
 }
 
-void DeviceController::deleteDevice(string name)
+//ta bort enhet om den finns, samt alla barnenheter
+void DeviceController::deleteDevice(Device* deviceDel)
 {
-	for (Device* device : Devices)
-	{
-		if (device->getName() == name)
-		{
-			if (device->getLeftDevice() != nullptr)
-				disconnectDevices(name, device->getLeftDevice()->getName());
-			if (device->getRightDevice() != nullptr)
-				disconnectDevices(name, device->getRightDevice()->getName());
-			Devices.erase(std::remove(Devices.begin(), Devices.end(), device), Devices.end());
-			delete device;
-			return;
-		}
+	if (deviceDel == nullptr) {
+		cout << "Device does not exist" << endl;
+		return;
 	}
-	cout << "Device does not exist" << endl;
+	if (deviceDel->getLeftDevice() != nullptr) {
+		deleteDevice(deviceDel->getLeftDevice());
+	}
+	if (deviceDel->getRightDevice() != nullptr) {
+		deleteDevice(deviceDel->getRightDevice());
+	}
+
+	//hitta enheten i vektorn och ta bort den
+	auto it = std::find(Devices.begin(), Devices.end(), deviceDel);
+	if (it != Devices.end())
+	{
+		if (deviceDel->getParentDevice() != nullptr)
+			deviceDel->disconnectDevice(deviceDel->getParentDevice());
+		delete deviceDel;
+		Devices.erase(it);
+	}
+	else
+		cout << "Device does not exist" << endl;
 }
 
+//anslut två enheter om de finns och inte redan är anslutna
 void DeviceController::connectDevices(string deviceName1, string deviceName2)
 {
+	if (deviceName1 == deviceName2) {
+		cout << "Devices cannot connect to themselves" << endl;
+		return;
+	}
+
 	//hitta enheterna med namnen
 	Device* device1 = nullptr;
 	Device* device2 = nullptr;
@@ -130,88 +141,82 @@ void DeviceController::connectDevices(string deviceName1, string deviceName2)
 		cout << "Device 2 does not exist" << endl;
 		return;
 	}
-	if (device1->getLeftDevice() != nullptr && device1->getRightDevice() != nullptr) {
-		cout << device1->getName() << " is already connected to two devices" << endl;
-		return;
-	}
 	if (device2->getParentDevice() != nullptr) {
 		cout << device2->getName() << " is already connected to another device" << endl;
 		return;
 	}
-
-	if (device1->getLeftDevice() != nullptr) {
-		if (!isInTree(device1, device2->getName())) {
-			cout << "Devices are already connected" << endl;
-			return;
-		}
-		device1->setLeftDevice(device2);
-		device2->setParentDevice(device1);
+	if ((device1->getLeftDevice() != nullptr && device1->getLeftDevice()->getName() == deviceName2) || (device1->getRightDevice() != nullptr && device1->getRightDevice()->getName() == deviceName2)) {
+		cout << "Devices are already connected" << endl;
 		return;
 	}
-	if (device1->getRightDevice() == nullptr) {
+
+	//kolla om det blir en cykel
+	Device* temp = device1;
+	while (temp->getParentDevice() != nullptr) {
+		if (temp->getParentDevice()->getName() == deviceName2) {
+			cout << "Cycles are not allowed" << endl;
+			return;
+		}
+		temp = temp->getParentDevice();
+	}
+	if (device1->getLeftDevice() == nullptr) { //kolla om enheten har ledig vänsterplats
+		device1->setLeftDevice(device2);
+		device2->setParentDevice(device1);
+	}
+	else if (device1->getRightDevice() == nullptr) { //kolla om enheten har ledig högerplats
 		device1->setRightDevice(device2);
+		device2->setParentDevice(device1);
+	}
+	else {
+		cout << "Device already has two connections" << endl;
 		return;
 	}
 
 	cout << "Devices " << device1->getName() << " and " << device2->getName() << " were connected!" << endl;
 }
 
-
+//printa alla enheter och deras anslutna enheter
 void DeviceController::printDevices()
 {
+	if(Devices.empty())
+		cout << "No devices to print" << endl;
 	for (Device* device : Devices)
 	{
-		device->printDevice();
+		device->printDevice(0); //börja med level 0 för rätt indentering
 	}
 	cout << endl;
 }
 
-//traverserar genom trädet, returner true om det redan finns en koppling med en enhet med namnet för att undvika cykler
-bool DeviceController::isInTree(Device* device, string name)
+//pinga en enhet och dess föräldrarenheter
+void DeviceController::devicePing(Device* deviceP)
 {
-	if (device->getLeftDevice() != nullptr)
-	{
-		if (device->getLeftDevice()->getName() == name)
-			return true;
-		if (isInTree(device->getLeftDevice(), name))
-			return true;
-	}
-	if (device->getRightDevice() != nullptr)
-	{
-		if (device->getRightDevice()->getName() == name)
-			return true;
-		if (isInTree(device->getRightDevice(), name))
-			return true;
-	}
-	return false;
+	if (deviceP == nullptr)
+		return;
+	devicePing(deviceP->getParentDevice());
+	deviceP->ping();
 }
 
-void DeviceController::devicePing(string deviceName)
+//hitta enhet med namn
+Device* DeviceController::findDevice(string deviceName)
 {
-	Device* device1 = nullptr;
 	for (Device* device : Devices)
 	{
 		if (device->getName() == deviceName)
-			device1 = device;
+			return device;
 	}
-
-	//felhantering
-	if (device1 == nullptr) {
-		cout << "Device does not exist" << endl;
-		return;
-	}
-	device1->ping();
+	return nullptr;
 }
 
+//skapa menyn/interfacet
 void DeviceController::createMenu() {
 	int input;
 	string name1;
 	string name2;
 	while (true)
 	{
-		cout << endl << "-----------------------------------" << "\n\n" << "What do you want to do?" << endl << 
-			"1. Create device" << endl << "2. Delete device" << endl << "3. Connect devices" << endl << 
-			"4. Disconnect devices" << endl <<"5. Print devices" << endl << "6. Ping device" << endl << "7. Quit" << endl << endl;
+		cout << endl << "-----------------------------------" << "\n\n" << "What do you want to do?" << endl <<
+			"1. Create device" << endl << "2. Delete device" << endl << "3. Connect devices" << endl <<
+			"4. Disconnect devices" << endl << "5. Print devices" << endl << "6. Ping device" << endl << "7. Quit" << endl << endl;
 		cout << "Enter choice: ";
 
 		cin >> input;
@@ -228,8 +233,10 @@ void DeviceController::createMenu() {
 			cout << "1. Create device" << endl;
 			cout << "Enter name: ";
 			cin >> name1;
+			cin.ignore();
 			cout << "Enter type:" << endl << "1. NetworkDevice \n2. AudioDevice" << endl;
 			cin >> type;
+			cin.ignore();
 			createDevice(name1, type);
 		}
 		else if (input == 2)
@@ -237,7 +244,8 @@ void DeviceController::createMenu() {
 			cout << "2. Delete device" << endl;
 			cout << "Enter name: ";
 			cin >> name1;
-			deleteDevice(name1);
+			cin.ignore();
+			deleteDevice(findDevice(name1));
 		}
 		else if (input == 3)
 		{
@@ -253,8 +261,10 @@ void DeviceController::createMenu() {
 			cout << "4. Disconnect devices" << endl;
 			cout << "Enter name of first device: ";
 			cin >> name1;
+			cin.ignore();
 			cout << "Enter name of second device: ";
 			cin >> name2;
+			cin.ignore();
 			disconnectDevices(name1, name2);
 		}
 		else if (input == 5)
@@ -267,7 +277,8 @@ void DeviceController::createMenu() {
 			cout << "6. Ping device" << endl;
 			cout << "Enter device name: ";
 			cin >> name1;
-			devicePing(name1);
+			cin.ignore();
+			devicePing(findDevice(name1));
 		}
 		else if (input == 7)
 		{
@@ -278,6 +289,7 @@ void DeviceController::createMenu() {
 	}
 }
 
+//kör menyn
 void InterfaceApp::run()
 {
 	controller.createMenu();

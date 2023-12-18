@@ -19,16 +19,15 @@ public:
 	Device* getLeftDevice() { return leftDevice; }
 	Device* getRightDevice() { return rightDevice; }
 	Device* getParentDevice() { return parentDevice; }
-	void disconnectDevice(Device* device);
+	void disconnectDevice(Device* device); //koppla bort en enhet om den finns och är ansluten
 	void setLeftDevice(Device* device) { leftDevice = device; }
 	void setRightDevice(Device* device) { rightDevice = device; }
 	void setParentDevice(Device* device) { parentDevice = device; }
 	void dcLeftDevice() { leftDevice = nullptr; }
 	void dcRightDevice() { rightDevice = nullptr; }
 	void dcParentDevice() { parentDevice = nullptr; }
-	void printDevice(); //Printar enheten och dess anslutna enhet om den finns
+	void printDevice(int level); //Printar enheten och dess anslutna enhet om den finns
 	virtual void ping() = 0;		//Pingar en enhet och spelar upp en beep om enheten är ansluten
-	void pingAllChildren();
 };
 
 class NetworkDevice : public Device
