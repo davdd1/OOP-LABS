@@ -178,11 +178,13 @@ void DeviceController::connectDevices(string deviceName1, string deviceName2)
 //printa alla enheter och deras anslutna enheter
 void DeviceController::printDevices()
 {
-	if(Devices.empty())
+	if (Devices.empty())
 		cout << "No devices to print" << endl;
 	for (Device* device : Devices)
 	{
-		device->printDevice(0); //börja med level 0 för rätt indentering
+		//bara printa roten av träden
+		if (device->getParentDevice() == nullptr)
+			device->printDevice(0); //börja med level 0 för rätt indentering
 	}
 	cout << endl;
 }
@@ -219,6 +221,13 @@ void DeviceController::createMenu() {
 			"4. Disconnect devices" << endl << "5. Print devices" << endl << "6. Ping device" << endl << "7. Quit" << endl << endl;
 		cout << "Enter choice: ";
 
+		//// Handle blank input
+		//if (cin.peek() == '\n') {
+		//	cin.ignore();
+		//	cout << "Invalid input. Please enter a number." << endl;
+		//	continue;
+		//}
+
 		cin >> input;
 		while (!(input > 0 && input < 8))
 		{
@@ -236,8 +245,14 @@ void DeviceController::createMenu() {
 			cin.ignore();
 			cout << "Enter type:" << endl << "1. NetworkDevice \n2. AudioDevice" << endl;
 			cin >> type;
-			cin.ignore();
+			while(type < 1 || type > 2)
+			{
+				cin.ignore();
+				cout << "Invalid input. Please enter a choice, 1 or 2?" << endl;
+				cin >> type;
+			}
 			createDevice(name1, type);
+				
 		}
 		else if (input == 2)
 		{
@@ -254,7 +269,10 @@ void DeviceController::createMenu() {
 			cin >> name1;
 			cout << "Enter name of second device: ";
 			cin >> name2;
-			connectDevices(name1, name2);
+			if (name1 != name2)
+				connectDevices(name1, name2);
+			else
+				cout << "Cant connect to the same device";
 		}
 		else if (input == 4)
 		{
