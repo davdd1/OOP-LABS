@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "DeviceController.h"
 #include "Device.h"
 
@@ -5,7 +6,7 @@ DeviceController::DeviceController()
 {
 }
 
-//kolla om namnets input är giltigt
+//kolla om namnets input ï¿½r giltigt
 bool DeviceController::isNameValid(string name) {
 	if (name.empty()) {
 		cout << "Name cannot be empty" << endl;
@@ -42,7 +43,7 @@ bool DeviceController::isNameValid(string name) {
 	return true;
 }
 
-//skapa enhet om namnet är giltigt
+//skapa enhet om namnet ï¿½r giltigt
 void DeviceController::createDevice(string name, int deviceType)
 {
 	if (deviceType == 1 && isNameValid(name))
@@ -51,7 +52,7 @@ void DeviceController::createDevice(string name, int deviceType)
 		Devices.push_back(new AudioDevice(name));
 }
 
-//koppla bort två enheter om de finns och är anslutna
+//koppla bort tvï¿½ enheter om de finns och ï¿½r anslutna
 void DeviceController::disconnectDevices(string deviceName1, string deviceName2)
 {
 	Device* device1 = nullptr;
@@ -86,6 +87,7 @@ void DeviceController::disconnectDevices(string deviceName1, string deviceName2)
 	cout << "Devices " << device1->getName() << " and " << device2->getName() << " were disconnected!" << endl;
 }
 
+
 //ta bort enhet om den finns, samt alla barnenheter
 void DeviceController::deleteDevice(Device* deviceDel)
 {
@@ -113,7 +115,7 @@ void DeviceController::deleteDevice(Device* deviceDel)
 		cout << "Device does not exist" << endl;
 }
 
-//anslut två enheter om de finns och inte redan är anslutna
+//anslut tvï¿½ enheter om de finns och inte redan ï¿½r anslutna
 void DeviceController::connectDevices(string deviceName1, string deviceName2)
 {
 	if (deviceName1 == deviceName2) {
@@ -159,11 +161,11 @@ void DeviceController::connectDevices(string deviceName1, string deviceName2)
 		}
 		temp = temp->getParentDevice();
 	}
-	if (device1->getLeftDevice() == nullptr) { //kolla om enheten har ledig vänsterplats
+	if (device1->getLeftDevice() == nullptr) { //kolla om enheten har ledig vï¿½nsterplats
 		device1->setLeftDevice(device2);
 		device2->setParentDevice(device1);
 	}
-	else if (device1->getRightDevice() == nullptr) { //kolla om enheten har ledig högerplats
+	else if (device1->getRightDevice() == nullptr) { //kolla om enheten har ledig hï¿½gerplats
 		device1->setRightDevice(device2);
 		device2->setParentDevice(device1);
 	}
@@ -182,14 +184,14 @@ void DeviceController::printDevices()
 		cout << "No devices to print" << endl;
 	for (Device* device : Devices)
 	{
-		//bara printa roten av träden
+		//bara printa roten av trï¿½den
 		if (device->getParentDevice() == nullptr)
-			device->printDevice(0); //börja med level 0 för rätt indentering
+			device->printDevice(0); //bï¿½rja med level 0 fï¿½r rï¿½tt indentering
 	}
 	cout << endl;
 }
 
-//pinga en enhet och dess föräldrarenheter
+//pinga en enhet och dess fï¿½rï¿½ldrarenheter
 void DeviceController::devicePing(Device* deviceP)
 {
 	if (deviceP == nullptr)
@@ -307,7 +309,7 @@ void DeviceController::createMenu() {
 	}
 }
 
-//kör menyn
+//kï¿½r menyn
 void InterfaceApp::run()
 {
 	controller.createMenu();
