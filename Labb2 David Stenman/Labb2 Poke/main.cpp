@@ -66,7 +66,7 @@ int main()
 			.setSpDefense(80)
 			.setSpeed(80)
 			.setStrategy(&randomStrategy)
-			.setTeam(1)
+			.setTeam(2)
 			.build();
 
 		Pokemon* Blastoise = PokemonBuilder()
@@ -99,7 +99,7 @@ int main()
 			.setSpDefense(80)
 			.setSpeed(150)
 			.setStrategy(&randomStrategy)
-			.setTeam(1)
+			.setTeam(2)
 			.build();
 
 		Pokemon* Snorlax = PokemonBuilder()
@@ -116,7 +116,7 @@ int main()
 			.setSpDefense(110)
 			.setSpeed(20)
 			.setStrategy(&randomStrategy)
-			.setTeam(2)
+			.setTeam(1)
 			.build();
 
 		Pokemon* Machamp = PokemonBuilder()
@@ -150,7 +150,7 @@ int main()
 			.setSpDefense(90)
 			.setSpeed(60)
 			.setStrategy(&randomStrategy)
-			.setTeam(2)
+			.setTeam(1)
 			.build();
 
 		Pokemon* Raichu = PokemonBuilder()

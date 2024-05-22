@@ -12,7 +12,12 @@
 #define BLUE "\033[34m"
 #define MAGENTA "\033[35m"
 #define CYAN "\033[36m"
-#define WHITE "\033[37m"
+#define WHITE "\033[97m"
+#define ORANGE "\033[38;5;208m"
+#define LIGHTGRAY "\033[37m"
+#define BOLD "\033[1m"
+#define DARKGRAY "\033[90m"
+#define GOLD "\033[38;5;220m"
 
 using namespace std;
 
@@ -57,7 +62,7 @@ void PhysicalMove::execute(Pokemon* attacker, Pokemon* defender) const {
 	int damage = baseDamage * multiplier;
 	defender->reduceHealth(damage);
 
-	cout << endl << attacker->getTeamColor() << attacker->getName() << RESET << " used " << BLUE << name << RESET << "!" << endl;
+	cout << endl << attacker->getTeamColor() << attacker->getName() << " " << RESET << "used " << BOLD << GOLD << name << RESET << "!" << RESET << endl;
 
 	if (multiplier == 0)
 		cout << YELLOW << "It had no effect!" << RESET << endl;
@@ -73,7 +78,7 @@ void PhysicalMove::execute(Pokemon* attacker, Pokemon* defender) const {
 		cout << GREEN << "It's super effective!" << RESET << endl;
 
 	if (defender->getHealth() == 0)
-		cout << RED << defender->getTeamColor() << defender->getName() << RESET << " fainted!" << RESET << endl << endl;
+		cout << defender->getTeamColor() << defender->getName() << RESET << RED << " fainted!" << RESET << endl << endl;
 }
 
 void SpecialMove::execute(Pokemon* attacker, Pokemon* defender) const {
@@ -82,7 +87,7 @@ void SpecialMove::execute(Pokemon* attacker, Pokemon* defender) const {
 	int damage = baseDamage * multiplier;
 	defender->reduceHealth(damage);
 
-	cout << endl << attacker->getTeamColor() << attacker->getName() << RESET << " used " << BLUE << name << RESET << "!" << endl;
+	cout << endl << attacker->getTeamColor() << attacker->getName() << " " << RESET << "used " << BOLD << GOLD << name << RESET << "!" << RESET << endl;
 
 	if (multiplier == 0)
 		cout << YELLOW << "It had no effect!" << RESET << endl;
@@ -99,7 +104,7 @@ void SpecialMove::execute(Pokemon* attacker, Pokemon* defender) const {
 
 	if (defender->getHealth() == 0)
 	{
-		cout << RED << defender->getTeamColor() << defender->getName() << RESET << " fainted!" << RESET << endl << endl;
+		cout << defender->getTeamColor() << defender->getName() << RESET << RED << " fainted!" << RESET << endl << endl;
 	}
 }
 
@@ -116,7 +121,7 @@ void HealingMove::execute(Pokemon* attacker, Pokemon* defender) const {
 	int healing = power * 0.75;
 
 	attacker->addHealth(healing);
-	cout << endl << attacker->getTeamColor() << attacker->getName() << RESET << " used " << BLUE << name << RESET << "!" << endl;
+	cout << endl << attacker->getTeamColor() << attacker->getName() << " " << RESET << "used " << BOLD << GOLD << name << RESET << "!" << RESET << endl;
 }
 
 selfDestructMove::selfDestructMove(const string& name, const Type type, const int power)
@@ -130,7 +135,7 @@ void selfDestructMove::execute(Pokemon* attacker, Pokemon* defender) const {
 	int damage = baseDamage * multiplier;
 
 	defender->reduceHealth(damage);
-	cout << endl << attacker->getTeamColor() << attacker->getName() << RESET << " used " << BLUE << name << RESET << "!" << endl;
+	cout << endl << attacker->getTeamColor() << attacker->getName() << " " << RESET << "used " << BOLD << GOLD << name << RESET << "!" << RESET << endl;
 
 	if (multiplier == 0)
 		cout << YELLOW << "It had no effect!" << RESET << endl;
@@ -147,10 +152,10 @@ void selfDestructMove::execute(Pokemon* attacker, Pokemon* defender) const {
 
 
 	if (defender->getHealth() == 0)
-		cout << RED << defender->getTeamColor() << defender->getName() << RESET << " fainted!" << RESET << endl;
+		cout << defender->getTeamColor() << defender->getName() << RESET << RED << " fainted!" << RESET << endl;
 
 	attacker->setHealth(0);
-	cout << RED << attacker->getTeamColor() << attacker->getName() << RESET << " fainted from his own blast!" << RESET << endl << endl;
+	cout << attacker->getTeamColor() << attacker->getName() << RESET << RED << " fainted from his own blast!" << RESET << endl << endl;
 }
 
 ParalyzingMove::ParalyzingMove(const string& name, const Type type, const int power)
@@ -160,14 +165,14 @@ ParalyzingMove::ParalyzingMove(const string& name, const Type type, const int po
 
 //har const för att den ej ska ändra på Move-objektet
 void ParalyzingMove::execute(Pokemon* attacker, Pokemon* defender) const {
-	cout << endl << attacker->getTeamColor() << attacker->getName() << RESET << " used " << BLUE << name << RESET << "!" << endl;
+	cout << endl << attacker->getTeamColor() << attacker->getName() << " " << RESET << "used " << BOLD << GOLD << name << RESET << "!" << RESET << endl;
 
 	if (defender->getHealth() == 0)
-		cout << RED << defender->getTeamColor() << defender->getName() << RESET << " fainted!" << RESET << endl << endl;
+		cout << defender->getTeamColor() << defender->getName() << RESET << RED << " fainted!" << RESET << endl << endl;
 
 	if (rand() % 10 < 9)            //90% chans att paralysera
 	{
 		defender->setParalyzed(true);
-		cout << defender->getName() << " got paralyzed!" << endl;
+		cout << defender->getTeamColor() << defender->getName() << RESET << YELLOW << " got paralyzed!" << RESET << endl;
 	}
 }

@@ -35,9 +35,7 @@ public:
 		const Move* move3, const Move* move4, int health, const int attack, const int spAttack,
 		const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed, const int team);
 
-	virtual ~Pokemon() {
-		cout << endl << "Pokemon " << name << " has been deleted";
-	}
+	virtual ~Pokemon() {}
 
 	const strategyFunc strategy;
 	virtual float calculateDamageMultiplier(Type damagetype);

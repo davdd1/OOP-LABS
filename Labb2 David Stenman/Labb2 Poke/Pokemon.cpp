@@ -12,8 +12,20 @@
 #define MAGENTA "\033[35m"
 #define CYAN "\033[36m"
 #define WHITE "\033[37m"
+#define ORANGE "\033[38;5;208m"
+
+#define RAINBOW1 "\033[38;5;196m"
+#define RAINBOW2 "\033[38;5;202m"
+#define RAINBOW3 "\033[38;5;220m"
+#define RAINBOW4 "\033[38;5;118m"
+#define RAINBOW5 "\033[38;5;45m"
+#define RAINBOW6 "\033[38;5;129m"
 
 using namespace std;
+
+void printRainbowDivider() {
+    cout << RAINBOW1 << "----" << RAINBOW2 << "----" << RAINBOW3 << "----" << RAINBOW4 << "----" << RAINBOW5 << "----" << RAINBOW6 << "----" << RESET << endl;
+}
 
 //konstruktor f�r pokemon
 Pokemon::Pokemon(const string& name, const Type type, const Move* move1,
@@ -119,9 +131,9 @@ const Move* Pokemon::getMove(int moveNumber) const {
 //returnera f�rgkod f�r teamf�rg
 const string Pokemon::getTeamColor() {
 	if (team == 1)
-		return YELLOW;
+		return BLUE;
 	else if (team == 2)
-		return MAGENTA;
+		return ORANGE;
 	else
 		return RESET;
 }
@@ -251,9 +263,9 @@ Pokemon* getFastest(Pokemon* pokemon1, Pokemon* pokemon2) {
 void Battle::start() {
 	if (TeamAlpha.empty() || TeamBravo.empty())
 		throw runtime_error("Teams cant be empty.");
-	cout << "Battle starting!" << endl << endl;
-	cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
-	cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
+	cout << endl << GREEN << "Battle starting!" << RESET << endl << endl;
+	cout << BLUE << "Team Alpha" << RESET << " sent out " << BLUE << TeamAlpha.front()->getName() << "!" << RESET << endl;
+	cout << ORANGE << "Team Bravo" << RESET << " sent out " << ORANGE << TeamBravo.front()->getName() << "!" << RESET << endl;
 	int indexA = 0;
 	int indexB = 0;
 	while (indexA < TeamAlpha.size() && indexB < TeamBravo.size()) {
@@ -262,8 +274,8 @@ void Battle::start() {
 		Pokemon* pokemonB = TeamBravo[indexB];
 
 		cout << "----------------------------------------" << endl;
-		cout << pokemonA->getName() << " health: " << pokemonA->getHealth() << endl;
-		cout << pokemonB->getName() << " health: " << pokemonB->getHealth() << endl;
+		cout << BLUE << pokemonA->getName() << RESET << " health: " << RED << pokemonA->getHealth() << RESET << endl;
+		cout << ORANGE << pokemonB->getName() << RESET << " health: " << RED << pokemonB->getHealth() << RESET << endl;
 
 		Pokemon* fastest = getFastest(pokemonA, pokemonB);
 		Pokemon* slowest = (fastest == pokemonA) ? pokemonB : pokemonA;
@@ -276,12 +288,12 @@ void Battle::start() {
 			if (slowest == pokemonA) {
 				indexA++;
 				if (indexA < TeamAlpha.size())
-					cout << "Team Alpha sent out " << TeamAlpha[indexA]->getName() << "!" << endl;
+					cout << BLUE << "Team Alpha" << RESET << " sent out " << BLUE << TeamAlpha.front()->getName() << "!" << RESET << endl;
 			}
 			else if (slowest == pokemonB) {
 				indexB++;
 				if (indexB < TeamBravo.size())
-					cout << "Team Bravo sent out " << TeamBravo[indexB]->getName() << "!" << endl;
+					cout << ORANGE << "Team Bravo" << RESET << " sent out " << ORANGE << TeamBravo.front()->getName() << "!" << RESET << endl;
 			}
 		}
 		//kolla om attackerande pokemon blev fainted av egen skada
@@ -289,13 +301,13 @@ void Battle::start() {
 			if (fastest == pokemonA) {
 				indexA++;
 				if (indexA < TeamAlpha.size())
-					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
+					cout << BLUE << "Team Alpha" << RESET << " sent out " << BLUE << TeamAlpha.front()->getName() << "!" << RESET << endl;
 				continue;
 			}
 			else if (fastest == pokemonB) {
 				indexB++;
 				if (indexB < TeamBravo.size())
-					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
+					cout << ORANGE << "Team Bravo" << RESET << " sent out " << ORANGE << TeamBravo.front()->getName() << "!" << RESET << endl;
 				continue;
 			}
 		}
@@ -316,12 +328,12 @@ void Battle::start() {
 			if (fastest == pokemonA) {
 				indexA++;
 				if (indexA < TeamAlpha.size())
-					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
+					cout << BLUE << "Team Alpha" << RESET << " sent out " << BLUE << TeamAlpha.front()->getName() << "!" << RESET << endl;
 			}
 			else if (fastest == pokemonB) {
 				indexB++;
 				if (indexB < TeamBravo.size())
-					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
+					cout << ORANGE << "Team Bravo" << RESET << " sent out " << ORANGE << TeamBravo.front()->getName() << "!" << RESET << endl;
 			}
 		}
 		//kolla om attackerande pokemon blev fainted av egen skada
@@ -329,29 +341,30 @@ void Battle::start() {
 			if (slowest == pokemonA) {
 				indexA++;
 				if (indexA < TeamAlpha.size())
-					cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
+					cout << BLUE << "Team Alpha" << RESET << " sent out " << BLUE << TeamAlpha.front()->getName() << "!" << RESET << endl;
 			}
 			else if (slowest == pokemonB) {
 				indexB++;
 				if (indexB < TeamBravo.size())
-					cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
+					cout << ORANGE << "Team Bravo" << RESET << " sent out " << ORANGE << TeamBravo.front()->getName() << "!" << RESET << endl;
 			}
 		}
 	}
-	cout << "----------------------------------------" << endl;
+	printRainbowDivider();
 	if (indexB >= TeamBravo.size()) {
-		cout << "Team Bravo ran out of usable Pokemon!" << endl << endl << "Team Alpha wins!" << endl;
-		cout << "Team Alpha: ";
+		cout << ORANGE << "Team Bravo" << RESET << " ran out of usable Pokemon!" << endl << endl << BLUE << "Team Alpha" << GREEN << " wins!" << RESET << endl;
+		cout << BLUE << "Team Alpha: " << RESET;
 		for (auto pokemon : TeamAlpha)
-			cout << pokemon->getName() << ": " << pokemon->getHealth() << " HP, ";
+			cout << GREEN << pokemon->getName() << ": " << RED << pokemon->getHealth() << " HP, " << RESET;
 		cout << endl;
 	}
 	else {
-		cout << "Team Alpha ran out of usable Pokemon!" << endl << endl << "Team Bravo wins!" << endl;
-		cout << "Team Bravo: ";
+		cout << BLUE << "Team Alpha" << RESET << " ran out of usable Pokemon!" << endl << endl << ORANGE << "Team Bravo" << GREEN << " wins!" << RESET << endl;
+		cout << ORANGE << "Team Bravo: " << RESET;
 		for (auto pokemon : TeamBravo)
-			cout << pokemon->getName() << ": " << pokemon->getHealth() << " HP, ";
+			cout << GREEN << pokemon->getName() << ": " << RED << pokemon->getHealth() << " HP, " << RESET;
 		
 	}
-	cout << endl << "----------------------------------------" << endl;
+	cout << endl;
+	printRainbowDivider();
 }
