@@ -28,11 +28,12 @@ private:
 	const int spDefense;
 	int speed;
 	bool paralyzed = false;
+	const int team;
 
 public:
 	Pokemon(const string& name, const Type type, const Move* move1, const Move* move2,
 		const Move* move3, const Move* move4, int health, const int attack, const int spAttack,
-		const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed);
+		const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed, const int team);
 
 	virtual ~Pokemon() {
 		cout << endl << "Pokemon " << name << " has been deleted";
@@ -53,6 +54,8 @@ public:
 	const Move* getMove(int moveNumber) const; //returnerar move)
 	const strategyFunc getStrategy() { return strategy; } //returnerar strategy
 	const bool isParalyzed() { return paralyzed; } //returnerar paralyzed
+	const int getTeam() { return team; }  //returnerar vilket team
+	const string getTeamColor();   //returnerar färgkod för teamfärg
 
 	void setParalyzed(bool status); //sätter paralyzedstatus
 	void setHealth(int newHealth) { health = newHealth; } //sätter health
@@ -67,7 +70,7 @@ private:			//private för att endast denna klass behöver komma åt type2
 public:
 	DualTypePokemon(const string& name, const Type type1, const Type type2, const Move* move1, const Move* move2,
 		const Move* move3, const Move* move4, int health, const int attack, const int spAttack,
-		const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed);
+		const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed, const int team);
 	float calculateDamageMultiplier(Type damagetype) override;
 };
 
@@ -84,6 +87,7 @@ private:
 	int speed;
 	bool paralyzed = false;
 	strategyFunc strategy;
+	int team;
 
 public:
 	PokemonBuilder() {};
@@ -99,6 +103,7 @@ public:
 	PokemonBuilder& setBothDefenses(int defense);
 	PokemonBuilder& setSpeed(int speed);
 	PokemonBuilder& setStrategy(strategyFunc strategy);
+	PokemonBuilder& setTeam(int team);
 	Pokemon* build();
 };
 

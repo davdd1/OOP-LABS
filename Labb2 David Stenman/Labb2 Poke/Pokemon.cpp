@@ -1,51 +1,65 @@
 #include "Pokemon.h"
 #include <iostream>
 #include <ctime>
+#include <stdexcept>
+
+#define RESET "\033[0m"
+#define BLACK "\033[30m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN "\033[36m"
+#define WHITE "\033[37m"
 
 using namespace std;
 
-//konstruktor för pokemon
+//konstruktor fï¿½r pokemon
 Pokemon::Pokemon(const string& name, const Type type, const Move* move1,
 	const Move* move2, const Move* move3, const Move* move4, int health,
 	const int attack, const int spAttack, const int defense, const int spDefense, 
-	int speed, const strategyFunc strategy, bool paralyzed)
+	int speed, const strategyFunc strategy, bool paralyzed, const int team)
 	: name(name), type(type), move1(move1), move2(move2), move3(move3), move4(move4),
-	health(health), attack(attack), spAttack(spAttack), defense(defense), spDefense(spDefense), speed(speed), strategy(strategy), paralyzed(paralyzed)
+	health(health), attack(attack), spAttack(spAttack), defense(defense), spDefense(spDefense), speed(speed), strategy(strategy), paralyzed(paralyzed), team(team)
 {
 	if (name.empty()) {
-		throw exception("Name cannot be empty");
+		throw runtime_error("Name cannot be empty");
 	}
 	if (health <= 0) {
-		throw exception("Health cannot be less than or equal to 0");
+		throw runtime_error("Health cannot be less than or equal to 0");
 	}
 	if (attack <= 0) {
-		throw exception("Attack cannot be less than or equal to 0");
+		throw runtime_error("Attack cannot be less than or equal to 0");
 	}
 	if (spAttack <= 0) {
-		throw exception("Special attack cannot be less than or equal to 0");
+		throw runtime_error("Special attack cannot be less than or equal to 0");
 	}
 	if (defense <= 0) {
-		throw exception("Defense cannot be less than or equal to 0");
+		throw runtime_error("Defense cannot be less than or equal to 0");
 	}
 	if (spDefense <= 0) {
-		throw exception("Special defense cannot be less than or equal to 0");
+		throw runtime_error("Special defense cannot be less than or equal to 0");
 	}
 	if (speed <= 0) {
-		throw exception("Speed cannot be less than or equal to 0");
+		throw runtime_error("Speed cannot be less than or equal to 0");
 	}
 	if (move1 == nullptr || move2 == nullptr || move3 == nullptr || move4 == nullptr) {
-		throw exception("Moves cannot be null");
+		throw runtime_error("Moves cannot be null");
+	}
+	if (team != 1 && team != 2) {
+		throw runtime_error("Team must be 1 or 2");
 	}
 }
 
-//constructor för dualtypepokemon
+//constructor fï¿½r dualtypepokemon
 DualTypePokemon::DualTypePokemon(const string& name, const Type type1, const Type type2, const Move* move1,
 	const Move* move2, const Move* move3, const Move* move4, int health, const int attack, const int spAttack, 
-	const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed)
-	: Pokemon(name, type1, move1, move2, move3, move4, health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed), type2(type2)
+	const int defense, const int spDefense, int speed, const strategyFunc strategy, bool paralyzed, const int team)
+	: Pokemon(name, type1, move1, move2, move3, move4, health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed, team), type2(type2)
 {
 	if (type1 == type2) {
-		throw exception("Types cannot be the same");
+		throw runtime_error("Types cannot be the same");
 	}
 }
 
@@ -56,7 +70,7 @@ void Pokemon::reduceHealth(int damage) {
 		health = 0;
 }
 
-//sätter paralyzedstatus
+//sï¿½tter paralyzedstatus
 void Pokemon::setParalyzed(bool status) {
 	if (status == true) {
 		paralyzed = true;
@@ -68,12 +82,12 @@ void Pokemon::setParalyzed(bool status) {
 	}
 }
 
-// returnera multiplicering för skada
+// returnera multiplicering fï¿½r skada
 float Pokemon::calculateDamageMultiplier(Type damagetype) {
 	return TypeChart::getDamageMultiplier(damagetype, type);
 }
 
-// returnera multiplicering för skada för dualtypepokemon
+// returnera multiplicering fï¿½r skada fï¿½r dualtypepokemon
 float DualTypePokemon::calculateDamageMultiplier(Type damagetype) {
 	float multiplier = TypeChart::getDamageMultiplier(damagetype, getType());
 	float multiplier2 = TypeChart::getDamageMultiplier(damagetype, getType2());
@@ -97,22 +111,32 @@ const Move* Pokemon::getMove(int moveNumber) const {
 		return move4;
 		break;
 	default:
-		throw exception("Move does not exist.");
+		throw runtime_error("Move does not exist.");
 		break;
 	}
 }
 
-// funktioner för att lägga till stats med hjälp av buildern
+//returnera fï¿½rgkod fï¿½r teamfï¿½rg
+const string Pokemon::getTeamColor() {
+	if (team == 1)
+		return YELLOW;
+	else if (team == 2)
+		return MAGENTA;
+	else
+		return RESET;
+}
+
+// funktioner fï¿½r att lï¿½gga till stats med hjï¿½lp av buildern
 PokemonBuilder& PokemonBuilder::addType(Type type) {
 	if (typeList.size() == 2)
-		throw exception("Pokemon can only have two types");
+		throw runtime_error("Pokemon can only have two types");
 	typeList.push_back(type);
 	return *this;
 }
 
 PokemonBuilder& PokemonBuilder::addMove(const Move* move) {
 	if (moveList.size() == 4)
-		throw exception("Pokemon can only have four moves");
+		throw runtime_error("Pokemon can only have four moves");
 	moveList.push_back(move);
 	return *this;
 }
@@ -170,36 +194,41 @@ PokemonBuilder& PokemonBuilder::setStrategy(strategyFunc strategy) {
 	return *this;
 }
 
+PokemonBuilder& PokemonBuilder::setTeam(int team) {
+	this->team = team;
+	return *this;
+}
+
 //bygg pokemon med dessa stats
 Pokemon* PokemonBuilder::build() {
 	if (moveList.size() != 4)
-		throw exception("Pokemon must have four moves");
+		throw runtime_error("Pokemon must have four moves");
 	if (typeList.size() == 1) {
-		return new Pokemon(name, typeList[0], moveList[0], moveList[1], moveList[2], moveList[3], health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed);
+		return new Pokemon(name, typeList[0], moveList[0], moveList[1], moveList[2], moveList[3], health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed, team);
 	}
 	else if (typeList.size() == 2) {
-		return new DualTypePokemon(name, typeList[0], typeList[1], moveList[0], moveList[1], moveList[2], moveList[3], health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed);
+		return new DualTypePokemon(name, typeList[0], typeList[1], moveList[0], moveList[1], moveList[2], moveList[3], health, attack, spAttack, defense, spDefense, speed, strategy, paralyzed, team);
 	}
 	else {
-		throw exception("Pokemon must have at least one type");
+		throw runtime_error("Pokemon must have at least one type");
 	}
 }
 
 Battle& Battle::addPokemonToA(Pokemon* pokemon) {
 	if (TeamAlpha.size() == 6)
-		throw exception("Team A can only have six pokemon");
+		throw runtime_error("Team A can only have six pokemon");
 	TeamAlpha.push_back(pokemon);
 	return *this;
 }
 
 Battle& Battle::addPokemonToB(Pokemon* pokemon) {
 	if (TeamBravo.size() == 6)
-		throw exception("Team B can only have six pokemon");
+		throw runtime_error("Team B can only have six pokemon");
 	TeamBravo.push_back(pokemon);
 	return *this;
 }
 
-//hitta snabbaste av två pokemon
+//hitta snabbaste av tvï¿½ pokemon
 Pokemon* getFastest(Pokemon* pokemon1, Pokemon* pokemon2) {
 	if (pokemon1->getSpeed() > pokemon2->getSpeed()) {
 		return pokemon1;
@@ -221,7 +250,7 @@ Pokemon* getFastest(Pokemon* pokemon1, Pokemon* pokemon2) {
 //starta battle
 void Battle::start() {
 	if (TeamAlpha.empty() || TeamBravo.empty())
-		throw exception("Teams cant be empty.");
+		throw runtime_error("Teams cant be empty.");
 	cout << "Battle starting!" << endl << endl;
 	cout << "Team Alpha sent out " << TeamAlpha.front()->getName() << "!" << endl;
 	cout << "Team Bravo sent out " << TeamBravo.front()->getName() << "!" << endl;
@@ -242,7 +271,7 @@ void Battle::start() {
 		//snabbare pokemonen attackerar
 		const Move* firstMove = fastest->strategy(fastest, slowest);
 		firstMove->perform(fastest, slowest);
-		//kolla om försvarande pokemon blev fainted av attackerande pokemon
+		//kolla om fï¿½rsvarande pokemon blev fainted av attackerande pokemon
 		if (slowest->getHealth() <= 0) {
 			if (slowest == pokemonA) {
 				indexA++;
@@ -270,19 +299,19 @@ void Battle::start() {
 				continue;
 			}
 		}
-		//hoppar över så att inte en fainted pokemon attackerar
+		//hoppar ï¿½ver sï¿½ att inte en fainted pokemon attackerar
 		else if (slowest->getHealth() <= 0)
 			continue;
 
-		//sluta ifall något lag inte har några pokemon kvar
+		//sluta ifall nï¿½got lag inte har nï¿½gra pokemon kvar
 		if (indexA >= TeamAlpha.size() || indexB >= TeamBravo.size())
 			break;
 
-		//långsammare pokemonen attackerar
+		//lï¿½ngsammare pokemonen attackerar
 		const Move* secondMove = slowest->strategy(slowest, fastest);
 		secondMove->perform(slowest, fastest);
 
-		//kolla om försvarande pokemon blev fainted av attackerande pokemon
+		//kolla om fï¿½rsvarande pokemon blev fainted av attackerande pokemon
 		if (fastest->getHealth() <= 0) {
 			if (fastest == pokemonA) {
 				indexA++;

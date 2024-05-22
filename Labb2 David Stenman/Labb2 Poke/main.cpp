@@ -12,7 +12,7 @@ const Move* randomStrategy(const Pokemon* self, const Pokemon* target) {
 	return self->getMove(random);
 }
 
-void main()
+int main()
 {
 	try
 	{
@@ -48,6 +48,7 @@ void main()
 			.setSpDefense(55)
 			.setSpeed(100)
 			.setStrategy(&randomStrategy)
+			.setTeam(1)
 			.build();
 
 		Pokemon* Venusaur = PokemonBuilder()
@@ -65,6 +66,7 @@ void main()
 			.setSpDefense(80)
 			.setSpeed(80)
 			.setStrategy(&randomStrategy)
+			.setTeam(1)
 			.build();
 
 		Pokemon* Blastoise = PokemonBuilder()
@@ -81,6 +83,7 @@ void main()
 			.setSpDefense(80)
 			.setSpeed(80)
 			.setStrategy(&randomStrategy)
+			.setTeam(1)
 			.build();
 
 		Pokemon* Electrode = PokemonBuilder()
@@ -96,6 +99,7 @@ void main()
 			.setSpDefense(80)
 			.setSpeed(150)
 			.setStrategy(&randomStrategy)
+			.setTeam(1)
 			.build();
 
 		Pokemon* Snorlax = PokemonBuilder()
@@ -112,6 +116,7 @@ void main()
 			.setSpDefense(110)
 			.setSpeed(20)
 			.setStrategy(&randomStrategy)
+			.setTeam(2)
 			.build();
 
 		Pokemon* Machamp = PokemonBuilder()
@@ -128,6 +133,7 @@ void main()
 			.setSpDefense(90)
 			.setSpeed(50)
 			.setStrategy(&randomStrategy)
+			.setTeam(2)
 			.build();
 
 		Pokemon* Alakazam = PokemonBuilder()
@@ -144,6 +150,7 @@ void main()
 			.setSpDefense(90)
 			.setSpeed(60)
 			.setStrategy(&randomStrategy)
+			.setTeam(2)
 			.build();
 
 		Pokemon* Raichu = PokemonBuilder()
@@ -160,6 +167,7 @@ void main()
 			.setSpDefense(90)
 			.setSpeed(130)
 			.setStrategy(&randomStrategy)
+			.setTeam(2)
 			.build();
 
 		Battle()
@@ -179,4 +187,5 @@ void main()
 	{
 		cout << "Error: " << e.what() << endl;
 	}
+	return 0;
 }
